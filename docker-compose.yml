@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  central-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: central_db
+    volumes:
+      - central-data:/var/lib/postgresql/data
+    networks:
+      - bike-network
+
+  central:
+    build: ./central
+    environment:
+      PGHOST: central-db
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: central_db
+      PGPORT: 5432
+    depends_on:
+      - central-db
+    ports:
+      - "3000:3000"
+    networks:
+      - bike-network
+
+  local-subotica-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: subotica_db
+    volumes:
+      - subotica-data:/var/lib/postgresql/data
+    networks:
+      - bike-network
+
+  local-subotica:
+    build: ./local
+    environment:
+      CITY_NAME: Subotica
+      CENTRAL_URL: http://central:3000
+      PGHOST: local-subotica-db
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: subotica_db
+      PGPORT: 5432
+    depends_on:
+      - local-subotica-db
+      - central
+    ports:
+      - "4001:3000"
+    networks:
+      - bike-network
+
+  local-novisad-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: novisad_db
+    volumes:
+      - novisad-data:/var/lib/postgresql/data
+    networks:
+      - bike-network
+
+  local-novisad:
+    build: ./local
+    environment:
+      CITY_NAME: NoviSad
+      CENTRAL_URL: http://central:3000
+      PGHOST: local-novisad-db
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: novisad_db
+      PGPORT: 5432
+    depends_on:
+      - local-novisad-db
+      - central
+    ports:
+      - "4002:3000"
+    networks:
+      - bike-network
+
+  local-kragujevac-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kragujevac_db
+    volumes:
+      - kragujevac-data:/var/lib/postgresql/data
+    networks:
+      - bike-network
+
+  local-kragujevac:
+    build: ./local
+    environment:
+      CITY_NAME: Kragujevac
+      CENTRAL_URL: http://central:3000
+      PGHOST: local-kragujevac-db
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: kragujevac_db
+      PGPORT: 5432
+    depends_on:
+      - local-kragujevac-db
+      - central
+    ports:
+      - "4003:3000"
+    networks:
+      - bike-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:3000"
+    depends_on:
+      - central
+      - local-subotica
+      - local-novisad
+      - local-kragujevac
+    networks:
+      - bike-network
+
+volumes:
+  central-data:
+  subotica-data:
+  novisad-data:
+  kragujevac-data:
+
+networks:
+  bike-network:
+    driver: bridge
