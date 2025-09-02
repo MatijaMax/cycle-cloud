@@ -4,10 +4,15 @@ const cors = require("cors");
 const { Pool } = require("pg");
 
 const app = express();
-app.use(cors());
+  app.use(cors({
+    origin: true, 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  }));
 app.use(bodyParser.json());
-
-// PostgreSQL connection
+app.options('*', cors());
+// DB CONNECTION
 const pool = new Pool({
   host: process.env.PGHOST || "localhost",
   user: process.env.PGUSER || "postgres",
@@ -16,7 +21,7 @@ const pool = new Pool({
   port: process.env.PGPORT || 5432,
 });
 
-// ensure tables exist
+// TABLE EXISTS CHECK
 (async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -37,7 +42,7 @@ const pool = new Pool({
   `);
 })();
 
-// ✅ Register new user
+// REGISTER
 app.post("/register", async (req, res) => {
   const { ime, prezime, adresa, jmbg } = req.body;
   try {
@@ -56,7 +61,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ✅ Check if user can rent more bikes
+// RENT LIMIT CHECK
 app.get("/can-rent/:jmbg", async (req, res) => {
   const { jmbg } = req.params;
   try {
@@ -75,7 +80,7 @@ app.get("/can-rent/:jmbg", async (req, res) => {
   }
 });
 
-// ✅ Register a rental (called by local service after check)
+// RENT
 app.post("/rent", async (req, res) => {
   const { jmbg, bike_label, bike_type } = req.body;
   try {
@@ -98,7 +103,7 @@ app.post("/rent", async (req, res) => {
   }
 });
 
-// ✅ Return bike
+// RETURN BIKE
 app.post("/return", async (req, res) => {
   const { jmbg, bike_label } = req.body;
   try {
@@ -114,4 +119,4 @@ app.post("/return", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Central service running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Central pokrenut na portu ${PORT}`));

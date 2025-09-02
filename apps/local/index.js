@@ -5,14 +5,19 @@ const { Pool } = require("pg");
 const fetch = require("node-fetch");
 
 const app = express();
-app.use(cors());
+  app.use(cors({
+    origin: true, 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  }));
 app.use(bodyParser.json());
-
-// City name from env
+app.options('*', cors());
+// CITY NAME
 const CITY_NAME = process.env.CITY_NAME || "DefaultCity";
 const CENTRAL_URL = process.env.CENTRAL_URL || "http://central:3000";
 
-// Local DB
+// LOCAL DB
 const pool = new Pool({
   host: process.env.PGHOST || "localhost",
   user: process.env.PGUSER || "postgres",
@@ -21,7 +26,7 @@ const pool = new Pool({
   port: process.env.PGPORT || 5432,
 });
 
-// ensure local table exists
+// TABLE EXISTS CHECK
 (async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS city_rentals (
@@ -35,7 +40,7 @@ const pool = new Pool({
   `);
 })();
 
-// ✅ Register user (delegates to central)
+// REGISTER
 app.post("/register", async (req, res) => {
   try {
     const response = await fetch(`${CENTRAL_URL}/register`, {
@@ -51,18 +56,18 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ✅ Rent a bike
+// RENT
 app.post("/rent", async (req, res) => {
   const { jmbg, bike_label, bike_type } = req.body;
   try {
-    // ask central if allowed
+    // IS ALLOWED CHECK
     const check = await fetch(`${CENTRAL_URL}/can-rent/${jmbg}`);
     const checkData = await check.json();
     if (!checkData.allowed) {
       return res.status(400).json({ success: false, message: checkData.message });
     }
 
-    // register in central
+    // REGISTER CENTRAL
     const centralResp = await fetch(`${CENTRAL_URL}/rent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -73,7 +78,7 @@ app.post("/rent", async (req, res) => {
       return res.status(400).json(centralData);
     }
 
-    // save locally
+    // SAVE
     await pool.query(
       "INSERT INTO city_rentals (jmbg, bike_label, bike_type) VALUES ($1, $2, $3)",
       [jmbg, bike_label, bike_type]
@@ -86,18 +91,18 @@ app.post("/rent", async (req, res) => {
   }
 });
 
-// ✅ Return bike
+// RETURN BIKE
 app.post("/return", async (req, res) => {
   const { jmbg, bike_label } = req.body;
   try {
-    // update central
+    // UPDATE CENTRAL
     await fetch(`${CENTRAL_URL}/return`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jmbg, bike_label }),
     });
 
-    // update local
+    // UPDATE LOCAL
     await pool.query(
       "UPDATE city_rentals SET returned_at = now() WHERE jmbg = $1 AND bike_label = $2 AND returned_at IS NULL",
       [jmbg, bike_label]
@@ -111,4 +116,4 @@ app.post("/return", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Local service ${CITY_NAME} running on port ${PORT}`));
+app.listen(PORT, () => console.log(`${CITY_NAME} servis pokrenut na portu ${PORT}`));
