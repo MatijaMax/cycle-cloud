@@ -2,7 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { Pool } = require("pg");
-const fetch = require("node-fetch");
+
+
 
 const app = express();
   app.use(cors({
@@ -12,10 +13,8 @@ const app = express();
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   }));
 app.use(bodyParser.json());
-app.options('*', cors());
-// CITY NAME
-const CITY_NAME = process.env.CITY_NAME || "DefaultCity";
-const CENTRAL_URL = process.env.CENTRAL_URL || "http://central:3000";
+
+const CENTRAL_URL = "http://central:3000";
 
 // LOCAL DB
 const pool = new Pool({
@@ -40,22 +39,6 @@ const pool = new Pool({
   `);
 })();
 
-// REGISTER
-app.post("/register", async (req, res) => {
-  try {
-    const response = await fetch(`${CENTRAL_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Greška komunikacije sa centralom" });
-  }
-});
-
 // RENT
 app.post("/rent", async (req, res) => {
   const { jmbg, bike_label, bike_type } = req.body;
@@ -63,7 +46,7 @@ app.post("/rent", async (req, res) => {
     // IS ALLOWED CHECK
     const check = await fetch(`${CENTRAL_URL}/can-rent/${jmbg}`);
     const checkData = await check.json();
-    if (!checkData.allowed) {
+    if (!check.ok || !checkData.allowed) {
       return res.status(400).json({ success: false, message: checkData.message });
     }
 
@@ -74,7 +57,7 @@ app.post("/rent", async (req, res) => {
       body: JSON.stringify({ jmbg, bike_label, bike_type }),
     });
     const centralData = await centralResp.json();
-    if (!centralData.success) {
+    if (!centralResp.ok || !centralData.success) {
       return res.status(400).json(centralData);
     }
 
@@ -84,7 +67,7 @@ app.post("/rent", async (req, res) => {
       [jmbg, bike_label, bike_type]
     );
 
-    res.json({ success: true, message: `Bicikl zadužen u ${CITY_NAME}` });
+    res.json({ success: true, message: `Bicikl zadužen` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Greška servera" });
@@ -108,7 +91,7 @@ app.post("/return", async (req, res) => {
       [jmbg, bike_label]
     );
 
-    res.json({ success: true, message: `Bicikl vraćen u ${CITY_NAME}` });
+    res.json({ success: true, message: `Bicikl vraćen` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Greška servera" });
@@ -116,4 +99,4 @@ app.post("/return", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`${CITY_NAME} servis pokrenut na portu ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Servis pokrenut`));

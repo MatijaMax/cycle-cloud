@@ -11,7 +11,6 @@ const app = express();
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   }));
 app.use(bodyParser.json());
-app.options('*', cors());
 // DB CONNECTION
 const pool = new Pool({
   host: process.env.PGHOST || "localhost",

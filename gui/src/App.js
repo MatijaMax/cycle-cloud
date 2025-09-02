@@ -40,7 +40,7 @@ function App() {
     jmbg: 'Jedinstveni broj'
   };
 
-  const CENTRAL_URL = "http://central:3000";
+  const CENTRAL_URL = "http://localhost:3000";
 
   const handleRegisterChange = e => setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
   const handleRentChange = e => setRentForm({ ...rentForm, [e.target.name]: e.target.value });
@@ -63,7 +63,7 @@ function App() {
 
   const rentBike = async () => {
     try {
-        const res = await fetch(`http://local-${activeCity === 'Subotica' ? 'subotica' : activeCity === 'Novi Sad' ? 'novisad' : 'kragujevac'}:3000/rent`, {
+        const res = await fetch(`http://localhost:400${activeCity === 'Subotica' ? '1' : activeCity === 'Novi Sad' ? '2' : '3'}/rent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(rentForm)
@@ -78,7 +78,7 @@ function App() {
 
   const returnBike = async () => {
     try {
-        const res = await fetch(`http://local-${activeCity === 'Subotica' ? 'subotica' : activeCity === 'Novi Sad' ? 'novisad' : 'kragujevac'}:3000/return`, {
+        const res = await fetch(`http://localhost:400${activeCity === 'Subotica' ? '1' : activeCity === 'Novi Sad' ? '2' : '3'}/return`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(returnForm)

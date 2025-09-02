@@ -52,7 +52,7 @@ services:
       - local-subotica-db
       - central
     ports:
-      - "4001:3000"
+      - "4001:4000"
     networks:
       - bike-network
 
@@ -81,7 +81,7 @@ services:
       - local-novisad-db
       - central
     ports:
-      - "4002:3000"
+      - "4002:4000"
     networks:
       - bike-network
 
@@ -110,7 +110,7 @@ services:
       - local-kragujevac-db
       - central
     ports:
-      - "4003:3000"
+      - "4003:4000"
     networks:
       - bike-network
 
