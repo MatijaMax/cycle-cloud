@@ -13,7 +13,7 @@ services:
       - bike-network
 
   central:
-    build: ./apps/central
+    image: matijamaks/central:latest
     environment:
       PGHOST: central-db
       PGUSER: postgres
@@ -39,7 +39,7 @@ services:
       - bike-network
 
   local-subotica:
-    build: ./apps/local
+    image: matijamaks/local:latest
     environment:
       CITY_NAME: Subotica
       CENTRAL_URL: http://central:3000
@@ -68,7 +68,7 @@ services:
       - bike-network
 
   local-novisad:
-    build: ./apps/local
+    image: matijamaks/local:latest
     environment:
       CITY_NAME: NoviSad
       CENTRAL_URL: http://central:3000
@@ -97,7 +97,7 @@ services:
       - bike-network
 
   local-kragujevac:
-    build: ./apps/local
+    image: matijamaks/local:latest
     environment:
       CITY_NAME: Kragujevac
       CENTRAL_URL: http://central:3000
@@ -115,7 +115,7 @@ services:
       - bike-network
 
   gui:
-    build: ./gui
+    image: matijamaks/gui:latest
     ports:
       - "5000:3000"
     depends_on:
