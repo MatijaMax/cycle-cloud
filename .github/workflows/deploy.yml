@@ -1,0 +1,35 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Docker login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+
+      - name: Build and push central
+        run: |
+          docker build --no-cache ./apps/central -t $DOCKER_USER/central:latest
+          docker push $DOCKER_USER/central:latest
+
+      - name: Build and push local
+        run: |
+          docker build --no-cache ./apps/local -t $DOCKER_USER/local:latest
+          docker push $DOCKER_USER/local:latest
+
+      - name: Build and push gui
+        run: |
+          docker build --no-cache ./gui -t $DOCKER_USER/gui:latest
+          docker push $DOCKER_USER/gui:latest
+
+
+
