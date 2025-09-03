@@ -16,6 +16,10 @@ jobs:
         run: |
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
 
+      - name: Debug
+        run: |
+          echo "DOCKER_USER=$DOCKER_USER"
+
       - name: Build and push central
         run: |
           docker build --no-cache ./apps/central -t $DOCKER_USER/central:latest
