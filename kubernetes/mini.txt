@@ -1,0 +1,15 @@
+minikube start
+minikube status
+kubectl apply -f central-deployment.yml
+kubectl get pods
+kubectl get services
+
+kubectl delete deployment central
+kubectl delete service central
+
+kubectl exec -it central-64cfb6448-5mtb5 -c central-database -- /bin/sh
+psql -U postgres -d central_db  
+
+kubectl port-forward svc/central 3000:3000
+
+minikube delete
